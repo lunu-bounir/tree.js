@@ -66,6 +66,19 @@
       this.emit('created', summary, node);
       return details;
     }
+    path(element) {
+      if (this.parent.contains(element)) {
+        const list = [element];
+        do {
+          element = element.parentElement;
+          list.push(element);
+        } while (element !== this.parent);
+        return list;
+      }
+      else {
+        return [];
+      }
+    }
   }
   SimpleTree.FILE = 'file';
   SimpleTree.FOLDER = 'folder';
@@ -134,6 +147,9 @@
     }
     select(element) {
       element.focus();
+    }
+    active() {
+      return [...this.parent.querySelectorAll('.selected')];
     }
   }
 

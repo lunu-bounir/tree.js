@@ -6,40 +6,74 @@ tree.on('open', e => console.log('open', e));
 tree.on('select', e => console.log('select', e));
 tree.on('action', e => console.log('action', e));
 tree.on('fetch', e => console.log('fetch', e));
+tree.on('browse', e => console.log('browse', e));
 
 tree.on('fetch', folder => window.setTimeout(() => {
   tree.file({
-    name: 'file 1'
+    name: 'file 2/1'
   }, folder);
   tree.file({
-    name: 'file 2'
+    name: 'file 2/2'
   }, folder);
 
   folder.resolve();
-  window.setTimeout(() => {
-    tree.unloadFolder(folder);
-  }, 3000);
 }, 1000));
 
-tree.json([{
+var structure = [{
   name: 'file 1'
 }, {
   name: 'file 2'
 }, {
   name: 'folder 1',
-  open: true,
+  open: false,
   type: Tree.FOLDER,
   selected: true,
   children: [{
-    name: 'file 1'
+    name: 'file 1/1'
   }, {
-    name: 'file 2'
+    name: 'file 1/2'
   }, {
-    name: 'folder 1',
-    type: Tree.FOLDER
+    name: 'folder 1/1',
+    type: Tree.FOLDER,
+    children: [{
+      name: 'folder 1/1/1',
+      type: Tree.FOLDER,
+      children: [{
+        name: 'folder 1/1/1/1',
+        type: Tree.FOLDER,
+        children: [{
+          name: 'file 1/1/1/1/1'
+        }, {
+          name: 'file 1/1/1/1/2'
+        }]
+      }]
+    }]
   }]
 }, {
   name: 'folder 2 (asynced)',
   type: Tree.FOLDER,
-  async: true
-}]);
+  asynced: true
+}];
+// keep track of the original node objects
+tree.on('created', (e, node) => {
+  e.node = node;
+});
+tree.json(structure);
+
+document.getElementById('browse-1').addEventListener('click', () => {
+  tree.browse(a => {
+    if (a.node.name === 'folder 2 (asynced)' || a.node.name === 'file 2/2') {
+      return true;
+    }
+    return false;
+  });
+});
+
+document.getElementById('browse-2').addEventListener('click', () => {
+  tree.browse(a => {
+    if (a.node.name.startsWith('folder 1') || a.node.name === 'file 1/1/1/1/2') {
+      return true;
+    }
+    return false;
+  });
+});

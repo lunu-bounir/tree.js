@@ -9,8 +9,18 @@
       this.events[name] = this.events[name] || [];
       this.events[name].push(callback);
     }
+    once(name, callback) {
+      callback.once = true;
+      this.on(name, callback);
+    }
     emit(name, ...data) {
-      (this.events[name] || []).forEach(c => c(...data));
+      (this.events[name] || []).forEach(c => {
+        c(...data);
+        if (c.once) {
+          const index = this.events[name].indexOf(c);
+          this.events[name].splice(index, 1);
+        }
+      });
     }
   }
 
@@ -33,6 +43,8 @@
       this.parent = parent.appendChild(document.createElement('details'));
       this.parent.appendChild(document.createElement('summary'));
       this.parent.open = true;
+      // use this function to alter a node before being passed to this.file or this.folder
+      this.interrupt = node => node;
     }
     append(element, parent, before, callback = () => {}) {
       if (before) {
@@ -45,6 +57,8 @@
       return element;
     }
     file(node, parent = this.parent, before) {
+      parent = parent.closest('details');
+      node = this.interrupt(node);
       const a = this.append(Object.assign(document.createElement('a'), {
         textContent: node.name,
         href: '#'
@@ -54,6 +68,8 @@
       return a;
     }
     folder(node, parent = this.parent, before) {
+      parent = parent.closest('details');
+      node = this.interrupt(node);
       const details = document.createElement('details');
       const summary = Object.assign(document.createElement('summary'), {
         textContent: node.name
@@ -64,16 +80,48 @@
         details.dataset.type = SimpleTree.FOLDER;
       });
       this.emit('created', summary, node);
-      return details;
+      return summary;
     }
-    path(element) {
+    open(details) {
+      details.open = true;
+    }
+    hierarchy(element) {
       if (this.parent.contains(element)) {
-        const list = [element];
-        do {
-          element = element.parentElement;
+        const list = [];
+        while (element !== this.parent) {
           list.push(element);
-        } while (element !== this.parent);
-        return list;
+          element = element.parentElement;
+        }
+        return list.filter(e => e.dataset.type);
+      }
+      else {
+        return [];
+      }
+    }
+    siblings(element = this.parent.querySelector('a, detail')) {
+      if (this.parent.contains(element)) {
+        if (element.dataset.type === undefined) {
+          element = element.parentElement;
+        }
+        return [...element.parentElement.children].filter(e => {
+          return e.dataset.type === SimpleTree.FILE || e.dataset.type === SimpleTree.FOLDER;
+        }).map(e => {
+          if (e.dataset.type === SimpleTree.FILE) {
+            return e;
+          }
+          else {
+            return e.querySelector('summary');
+          }
+        });
+      }
+      else {
+        return [];
+      }
+    }
+    children(details) {
+      const e = details.querySelector('a, details');
+      if (e) {
+        return this.siblings(e);
       }
       else {
         return [];
@@ -97,27 +145,27 @@
     }
     // add open event for folder creation
     folder(...args) {
-      const details = super.folder(...args);
+      const summary = super.folder(...args);
+      const details = summary.closest('details');
       details.addEventListener('toggle', () => {
-        this.emit(details.dataset.loaded === 'false' && details.open ? 'fetch' : 'open', details);
+        this.emit(details.dataset.loaded === 'false' && details.open ? 'fetch' : 'open', summary);
       });
-      details.resolve = () => {
+      summary.resolve = () => {
         details.dataset.loaded = true;
-        this.emit('open', details);
+        this.emit('open', summary);
       };
-      return details;
+      return summary;
     }
     asyncFolder(node, parent, before) {
-      const details = this.folder(node, parent, before);
+      const summary = this.folder(node, parent, before);
+      const details = summary.closest('details');
       details.dataset.loaded = false;
 
       if (node.open) {
-        details.querySelector('summary').dispatchEvent(new Event('click', {
-          bubbles: true
-        }));
+        this.open(details);
       }
 
-      return details;
+      return summary;
     }
     unloadFolder(details) {
       details.open = false;
@@ -128,12 +176,36 @@
       [...details.children].slice(1).forEach(e => e.remove());
       details.dataset.loaded = false;
     }
+    browse(validate, es = this.siblings()) {
+      for (const e of es) {
+        if (validate(e)) {
+          this.select(e);
+          if (e.dataset.type === SimpleTree.FILE) {
+            return this.emit('browse', e);
+          }
+          const parent = e.closest('details');
+          if (parent.open) {
+            return this.browse(validate, this.children(parent));
+          }
+          else {
+            this.once('open', () => this.browse(validate, this.children(parent)));
+            this.open(parent);
+            return;
+          }
+        }
+      }
+      this.emit('browse');
+    }
   }
 
   class SelectTree extends AsyncTree {
     constructor(parent) {
       super(parent);
-      parent.addEventListener('focusin', ({target}) => {
+      parent.addEventListener('focusin', e => {
+        const {target} = e;
+        if (target.classList.contains('selected')) {
+          return;
+        }
         [...this.parent.querySelectorAll('.selected')].forEach(e => e.classList.remove('selected'));
         target.classList.add('selected');
         this.emit('select', target);
@@ -149,7 +221,7 @@
       element.focus();
     }
     active() {
-      return [...this.parent.querySelectorAll('.selected')];
+      return this.parent.querySelector('.selected');
     }
   }
 
@@ -157,7 +229,7 @@
     json(array, parent) {
       array.forEach(item => {
         if (item.type === SimpleTree.FOLDER) {
-          const folder = this[item.async ? 'asyncFolder' : 'folder'](item, parent);
+          const folder = this[item.asynced ? 'asyncFolder' : 'folder'](item, parent);
           if (item.children) {
             this.json(item.children, folder);
           }

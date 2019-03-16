@@ -85,7 +85,7 @@
     open(details) {
       details.open = true;
     }
-    hierarchy(element) {
+    hierarchy(element = this.active()) {
       if (this.parent.contains(element)) {
         const list = [];
         while (element !== this.parent) {
@@ -132,8 +132,8 @@
   SimpleTree.FOLDER = 'folder';
 
   class AsyncTree extends SimpleTree {
-    constructor(parent) {
-      super(parent);
+    constructor(parent, options) {
+      super(parent, options);
       // do not allow toggling when folder is loading
       parent.addEventListener('click', e => {
         const details = e.target.parentElement;
@@ -169,8 +169,8 @@
     }
     unloadFolder(details) {
       details.open = false;
-      const focused = details.querySelector(':focus');
-      if (focused) {
+      const focused = this.active();
+      if (focused && this.parent.contains(focused)) {
         details.querySelector('summary').focus();
       }
       [...details.children].slice(1).forEach(e => e.remove());
@@ -199,8 +199,8 @@
   }
 
   class SelectTree extends AsyncTree {
-    constructor(parent) {
-      super(parent);
+    constructor(parent, options = {}) {
+      super(parent, options);
       parent.addEventListener('focusin', e => {
         const {target} = e;
         if (target.classList.contains('selected')) {
@@ -216,12 +216,43 @@
         }
       });
       parent.classList.add('select-tree');
+      // navigate
+      if (options.navigate) {
+        this.parent.addEventListener('keyup', ({code}) => {
+          if (code === 'ArrowUp') {
+            this.navigate('backward');
+          }
+          else if (code === 'ArrowDown') {
+            this.navigate('forward');
+          }
+        });
+      }
     }
     select(element) {
-      element.focus();
+      const summary = element.querySelector('summary');
+      if (summary) {
+        summary.focus();
+      }
+      else {
+        element.focus();
+      }
     }
     active() {
       return this.parent.querySelector('.selected');
+    }
+    navigate(direction = 'forward') {
+      const e = this.active();
+      if (e) {
+        const list = [...this.parent.querySelectorAll('a, summary')];
+        const index = list.indexOf(e);
+        const candidates = direction === 'forward' ? list.slice(index + 1) : list.slice(0, index).reverse();
+        for (const m of candidates) {
+          if (m.getBoundingClientRect().height) {
+            console.log(m);
+            return this.select(m);
+          }
+        }
+      }
     }
   }
 

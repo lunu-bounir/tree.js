@@ -1,7 +1,9 @@
 /* globals Tree */
 'use strict';
 
-var tree = new Tree(document.getElementById('tree'));
+var tree = new Tree(document.getElementById('tree'), {
+  navigate: true // allow navigate with ArrowUp and ArrowDown
+});
 tree.on('open', e => console.log('open', e));
 tree.on('select', e => console.log('select', e));
 tree.on('action', e => console.log('action', e));
@@ -76,4 +78,16 @@ document.getElementById('browse-2').addEventListener('click', () => {
     }
     return false;
   });
+});
+
+document.getElementById('unload').addEventListener('click', () => {
+  const d = tree.hierarchy().pop();
+  tree.unloadFolder(d);
+});
+
+document.getElementById('previous').addEventListener('click', () => {
+  tree.navigate('backward');
+});
+document.getElementById('next').addEventListener('click', () => {
+  tree.navigate('forward');
 });

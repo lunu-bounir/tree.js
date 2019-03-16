@@ -1,7 +1,0 @@
-<?xml version="1.0" ?><svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><title/>
-<g>
-  <animateTransform attributeName="transform" type="rotate" from="0 32 32" to="360 32 32" dur="1s" repeatCount="indefinite"/>
-  <circle cx="32" cy="32" r="32" fill="#efefef"/>
-  <path d="M 62 32 A 30 30 0 0 0 32 2"
-    style="stroke: #555; stroke-width:6; fill:none;"/>
-</g></svg>

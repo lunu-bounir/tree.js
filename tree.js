@@ -218,12 +218,11 @@
       parent.classList.add('select-tree');
       // navigate
       if (options.navigate) {
-        this.parent.addEventListener('keyup', ({code}) => {
-          if (code === 'ArrowUp') {
-            this.navigate('backward');
-          }
-          else if (code === 'ArrowDown') {
-            this.navigate('forward');
+        this.parent.addEventListener('keydown', e => {
+          const {code} = e;
+          if (code === 'ArrowUp' || code === 'ArrowDown') {
+            this.navigate(code === 'ArrowUp' ? 'backward' : 'forward');
+            e.preventDefault();
           }
         });
       }
@@ -248,7 +247,6 @@
         const candidates = direction === 'forward' ? list.slice(index + 1) : list.slice(0, index).reverse();
         for (const m of candidates) {
           if (m.getBoundingClientRect().height) {
-            console.log(m);
             return this.select(m);
           }
         }

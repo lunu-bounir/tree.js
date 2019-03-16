@@ -1,0 +1,36 @@
+:root {
+  --bg-color: #182126;
+  --color: #d9dbdc;
+  --selected-bg-color: #4a5154;
+}
+body {
+  background-color: var(--bg-color);
+  color: var(--color);
+  font-family: "Helvetica Neue",Helvetica,sans-serif;
+  font-size: 13px;
+}
+.simple-tree a,
+.simple-tree summary {
+  width: unset;
+}
+.simple-tree summary,
+.simple-tree.dark summary {
+  background-color: var(--bg-color);
+}
+.select-tree a.selected,
+.select-tree.dark a.selected {
+  z-index: -2;
+}
+.select-tree .selected,
+.select-tree.dark .selected {
+  background-color: var(--selected-bg-color);
+  border-color: transparent;
+  box-shadow: -50vw 0 0 var(--selected-bg-color);
+}
+.simple-tree summary {
+  padding: 0 10px;
+}
+.simple-tree a,
+.simple-tree summary {
+  padding: 2px 0;
+}

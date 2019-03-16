@@ -1,7 +1,7 @@
 'use strict';
 
 {
-  class Events {
+  const Emitter = typeof window.Emitter === 'undefined' ? class Emitter {
     constructor() {
       this.events = {};
     }
@@ -22,9 +22,9 @@
         }
       });
     }
-  }
+  } : window.Emitter;
 
-  class SimpleTree extends Events {
+  class SimpleTree extends Emitter {
     constructor(parent) {
       super();
       // do not toggle with click

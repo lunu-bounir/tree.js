@@ -25,7 +25,7 @@
   } : window.Emitter;
 
   class SimpleTree extends Emitter {
-    constructor(parent) {
+    constructor(parent, properties = {}) {
       super();
       // do not toggle with click
       parent.addEventListener('click', e => {
@@ -35,12 +35,18 @@
         if (e && e.clientX && e.detail === 1 && e.offsetX >= 0) {
           return e.preventDefault();
         }
-        if (e.target.dataset.type === SimpleTree.FILE) {
-          this.emit('action', e.target);
+        const active = this.active();
+        if (active.dataset.type === SimpleTree.FILE) {
+          this.emit('action', active);
           e.preventDefault();
+          // dblclick on full-width moves the focus away
+          active.focus();
         }
       });
       parent.classList.add('simple-tree');
+      if (properties.dark) {
+        parent.classList.add('dark');
+      }
       this.parent = parent.appendChild(document.createElement('details'));
       this.parent.appendChild(document.createElement('summary'));
       this.parent.open = true;

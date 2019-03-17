@@ -2,7 +2,8 @@
 'use strict';
 
 var tree = new Tree(document.getElementById('tree'), {
-  navigate: true
+  navigate: true,
+  dark: true
 });
 tree.json([{
   name: 'file',

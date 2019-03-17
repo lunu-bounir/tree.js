@@ -37,6 +37,7 @@
         }
         if (e.target.dataset.type === SimpleTree.FILE) {
           this.emit('action', e.target);
+          e.preventDefault();
         }
       });
       parent.classList.add('simple-tree');

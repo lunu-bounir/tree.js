@@ -38,17 +38,27 @@
 .simple-tree details :not(summary) {
   margin-left: 20px;
 }
+.simple-tree.nodots details :not(summary) {
+  margin-left: 12px;
+}
 .simple-tree details::before,
 .simple-tree details>:not(details)::before {
   content: '';
   width: 10px;
   display: block;
   position: absolute;
+}
+.simple-tree details::before,
+.simple-tree details>:not(details)::before {
   background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 2 2" xmlns="http://www.w3.org/2000/svg"><g><rect x="0" y="0" width="1" height="1"/></g></svg>') left top / 2px 2px;
 }
 .simple-tree.dark details::before,
 .simple-tree details>:not(details)::before {
   background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 2 2" xmlns="http://www.w3.org/2000/svg"><g><rect x="0" y="0" width="1" height="1" fill="white"/></g></svg>');
+}
+.simple-tree.nodots a::before,
+.simple-tree.nodots details::before {
+  background-image: none;
 }
 .simple-tree details::before {
   top: 0;

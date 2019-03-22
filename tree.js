@@ -216,14 +216,14 @@
             }
           }
           if (active) {
-            window.setTimeout(() => active.focus(), 100);
+            this.focus(active);
           }
         }
       });
       window.addEventListener('focus', () => {
         const active = this.active();
         if (active) {
-          window.setTimeout(() => active.focus(), 100);
+          this.focus(active);
         }
       });
       parent.addEventListener('focusin', e => {
@@ -249,6 +249,10 @@
         });
       }
     }
+    focus(target) {
+      window.clearTimeout(this.id);
+      this.id = window.setTimeout(() => target.focus(), 100);
+    }
     select(target) {
       const summary = target.querySelector('summary');
       if (summary) {
@@ -259,6 +263,7 @@
       if (document.hasFocus()) {
         target.focus();
       }
+      window.clearTimeout(this.id);
       this.emit('select', target);
     }
     active() {

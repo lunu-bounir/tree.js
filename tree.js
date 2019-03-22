@@ -36,11 +36,9 @@
           return e.preventDefault();
         }
         const active = this.active();
-        if (active.dataset.type === SimpleTree.FILE) {
+        if (active && active.dataset.type === SimpleTree.FILE) {
           this.emit('action', active);
           e.preventDefault();
-          // dblclick on full-width moves the focus away
-          active.focus();
         }
       });
       parent.classList.add('simple-tree');
@@ -105,7 +103,7 @@
         return [];
       }
     }
-    siblings(element = this.parent.querySelector('a, detail')) {
+    siblings(element = this.parent.querySelector('a, details')) {
       if (this.parent.contains(element)) {
         if (element.dataset.type === undefined) {
           element = element.parentElement;
@@ -178,7 +176,7 @@
       details.open = false;
       const focused = this.active();
       if (focused && this.parent.contains(focused)) {
-        details.querySelector('summary').focus();
+        this.select(details);
       }
       [...details.children].slice(1).forEach(e => e.remove());
       details.dataset.loaded = false;
@@ -208,14 +206,31 @@
   class SelectTree extends AsyncTree {
     constructor(parent, options = {}) {
       super(parent, options);
-      parent.addEventListener('focusin', e => {
-        const {target} = e;
-        if (target.classList.contains('selected')) {
-          return;
+      /* multiple clicks outside of elements */
+      parent.addEventListener('click', e => {
+        if (e.detail > 1) {
+          const active = this.active();
+          if (active && active !== e.target) {
+            if (e.target.tagName === 'A' || e.target.tagName === 'SUMMARY') {
+              return this.select(e.target, 'click');
+            }
+          }
+          if (active) {
+            window.setTimeout(() => active.focus(), 100);
+          }
         }
-        [...this.parent.querySelectorAll('.selected')].forEach(e => e.classList.remove('selected'));
-        target.classList.add('selected');
-        this.emit('select', target);
+      });
+      window.addEventListener('focus', () => {
+        const active = this.active();
+        if (active) {
+          window.setTimeout(() => active.focus(), 100);
+        }
+      });
+      parent.addEventListener('focusin', e => {
+        const active = this.active();
+        if (active !== e.target) {
+          this.select(e.target, 'focus');
+        }
       });
       this.on('created', (element, node) => {
         if (node.selected) {
@@ -234,14 +249,17 @@
         });
       }
     }
-    select(element) {
-      const summary = element.querySelector('summary');
+    select(target) {
+      const summary = target.querySelector('summary');
       if (summary) {
-        summary.focus();
+        target = summary;
       }
-      else {
-        element.focus();
+      [...this.parent.querySelectorAll('.selected')].forEach(e => e.classList.remove('selected'));
+      target.classList.add('selected');
+      if (document.hasFocus()) {
+        target.focus();
       }
+      this.emit('select', target);
     }
     active() {
       return this.parent.querySelector('.selected');

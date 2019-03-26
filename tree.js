@@ -14,13 +14,16 @@
       this.on(name, callback);
     }
     emit(name, ...data) {
-      (this.events[name] || []).forEach(c => {
+      if (this.events[name] === undefined ) {
+        return;
+      }
+      for (const c of [...this.events[name]]) {
         c(...data);
         if (c.once) {
           const index = this.events[name].indexOf(c);
           this.events[name].splice(index, 1);
         }
-      });
+      }
     }
   } : window.Emitter;
 
@@ -37,8 +40,11 @@
         }
         const active = this.active();
         if (active && active.dataset.type === SimpleTree.FILE) {
-          this.emit('action', active);
           e.preventDefault();
+          this.emit('action', active);
+          if (properties['no-focus-on-action'] === true) {
+            window.clearTimeout(this.id);
+          }
         }
       });
       parent.classList.add('simple-tree');
@@ -68,8 +74,8 @@
         textContent: node.name,
         href: '#'
       }), parent, before);
-      this.emit('created', a, node);
       a.dataset.type = SimpleTree.FILE;
+      this.emit('created', a, node);
       return a;
     }
     folder(node, parent = this.parent, before) {
@@ -94,10 +100,15 @@
       if (this.parent.contains(element)) {
         const list = [];
         while (element !== this.parent) {
-          list.push(element);
+          if (element.dataset.type === SimpleTree.FILE) {
+            list.push(element);
+          }
+          else if (element.dataset.type === SimpleTree.FOLDER) {
+            list.push(element.querySelector('summary'));
+          }
           element = element.parentElement;
         }
-        return list.filter(e => e.dataset.type);
+        return list;
       }
       else {
         return [];
@@ -152,7 +163,7 @@
     folder(...args) {
       const summary = super.folder(...args);
       const details = summary.closest('details');
-      details.addEventListener('toggle', () => {
+      details.addEventListener('toggle', e => {
         this.emit(details.dataset.loaded === 'false' && details.open ? 'fetch' : 'open', summary);
       });
       summary.resolve = () => {
@@ -172,7 +183,8 @@
 
       return summary;
     }
-    unloadFolder(details) {
+    unloadFolder(summary) {
+      const details = summary.closest('details');
       details.open = false;
       const focused = this.active();
       if (focused && this.parent.contains(focused)) {
@@ -193,13 +205,15 @@
             return this.browse(validate, this.children(parent));
           }
           else {
-            this.once('open', () => this.browse(validate, this.children(parent)));
-            this.open(parent);
+            window.setTimeout(() => {
+              this.once('open', () => this.browse(validate, this.children(parent)));
+              this.open(parent);
+            }, 0);
             return;
           }
         }
       }
-      this.emit('browse');
+      this.emit('browse', false);
     }
   }
 
@@ -251,7 +265,7 @@
     }
     focus(target) {
       window.clearTimeout(this.id);
-      this.id = window.setTimeout(() => target.focus(), 100);
+      this.id = window.setTimeout(() => document.hasFocus() && target.focus(), 100);
     }
     select(target) {
       const summary = target.querySelector('summary');
@@ -260,10 +274,7 @@
       }
       [...this.parent.querySelectorAll('.selected')].forEach(e => e.classList.remove('selected'));
       target.classList.add('selected');
-      if (document.hasFocus()) {
-        target.focus();
-      }
-      window.clearTimeout(this.id);
+      this.focus(target);
       this.emit('select', target);
     }
     active() {

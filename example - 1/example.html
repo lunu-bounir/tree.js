@@ -4,14 +4,22 @@
   <link rel="stylesheet" href="../tree.css">
 </head>
 <body>
-  <div>
+  <div id="tree"></div>
+  <p>
     <input type="button" id="browse-1" value="Browse folder 2 -> file 2">
     <input type="button" id="browse-2" value="Browse folder 1 -> folder 1/1 -> folder 1/1/1 -> folder 1/1/1/1 -> filde 1/1/1/1/2">
+  </p>
+  <p>
     <input type="button" id="unload" value="Unload active folder">
+  </p>
+  <p>
     <input type="button" id="previous" value="Select previous">
     <input type="button" id="next" value="Select next">
-  </div>
-  <div id="tree"></div>
+  </p>
+  <p>
+    <input type="button" id="rename" value="Rename node">
+    <input type="button" id="delete" value="Delete node">
+  </p>
   <script src="../tree.js"></script>
   <script src="example.js"></script>
 </body>

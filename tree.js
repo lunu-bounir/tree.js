@@ -67,6 +67,16 @@
       callback();
       return element;
     }
+    remove(element) {
+      if (element.dataset.type === SimpleTree.FILE) {
+        element.remove();
+      }
+      else {
+        const parent = element.closest('details');
+        parent.remove();
+      }
+      this.emit('removed', element);
+    }
     file(node, parent = this.parent, before) {
       parent = parent.closest('details');
       node = this.interrupt(node);

@@ -1,7 +1,7 @@
-/* globals Tree */
+/* global Tree */
 'use strict';
 
-var tree = new Tree(document.getElementById('tree'), {
+const tree = new Tree(document.getElementById('tree'), {
   navigate: true // allow navigate with ArrowUp and ArrowDown
 });
 tree.on('open', e => console.log('open', e));
@@ -21,7 +21,7 @@ tree.on('fetch', folder => window.setTimeout(() => {
   folder.resolve();
 }, 1000));
 
-var structure = [{
+const structure = [{
   name: 'file 1'
 }, {
   name: 'file 2'
@@ -90,4 +90,19 @@ document.getElementById('previous').addEventListener('click', () => {
 });
 document.getElementById('next').addEventListener('click', () => {
   tree.navigate('forward');
+});
+
+document.getElementById('rename').addEventListener('click', () => {
+  const node = tree.active();
+  const name = prompt('Enter a new rename', node.textContent);
+
+  if (name) {
+    node.textContent = name;
+  }
+});
+
+document.getElementById('delete').addEventListener('click', () => {
+  const node = tree.active();
+  tree.navigate('backward');
+  tree.remove(node);
 });

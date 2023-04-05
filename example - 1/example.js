@@ -4,14 +4,12 @@
 const tree = new Tree(document.getElementById('tree'), {
   navigate: true // allow navigate with ArrowUp and ArrowDown
 });
-tree.on('open', e => console.log('open', e));
-// tree.on('select', e => console.log('select', e));
-tree.on('action', e => console.log('action', e));
-tree.on('fetch', e => console.log('fetch', e));
-tree.on('browse', e => console.log('browse', e));
-tree.on('select', e=>{
-  const path = tree.getPath(e, ' -> ');
-  console.log('Path:', path);
+tree.on('open', e => console.log('event "open"', e));
+tree.on('action', e => console.log('event "action"', e));
+tree.on('fetch', e => console.log('event "fetch"', e));
+tree.on('browse', e => console.log('event "browse"', e));
+tree.on('select', e=> {
+  console.log('event "select"', tree.getPath(e, ' -> '));
 });
 
 tree.on('fetch', folder => window.setTimeout(() => {

@@ -9,10 +9,10 @@ tree.on('open', e => console.log('open', e));
 tree.on('action', e => console.log('action', e));
 tree.on('fetch', e => console.log('fetch', e));
 tree.on('browse', e => console.log('browse', e));
-tree.on("select",e=>{
-  const path=tree.getPath(e);
-  console.log(path);
-})
+tree.on('select', e=>{
+  const path = tree.getPath(e, ' -> ');
+  console.log('Path:', path);
+});
 
 tree.on('fetch', folder => window.setTimeout(() => {
   tree.file({

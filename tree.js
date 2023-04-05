@@ -124,6 +124,12 @@
         return [];
       }
     }
+    // This method takes an element as an argument and return the full path of it with a custom separator
+    getPath(element, separator = '/') {
+      const nodes = this.hierarchy(element);
+
+      return nodes.map(n => n.textContent).reverse().join(separator);
+    }
     siblings(element = this.parent.querySelector('a, details')) {
       if (this.parent.contains(element)) {
         if (element.dataset.type === undefined) {
@@ -224,18 +230,6 @@
         }
       }
       this.emit('browse', false);
-    }
-    // This method takes an element as an argument and return the full path of it.
-    getPath(element){     
-      let path = element.textContent;
-      let parent = element.parentElement;
-      while (parent && parent !== this.parent) {
-        if (parent.querySelector("summary")) {
-          path = parent.querySelector("summary").textContent + "/" + path;
-        }
-        parent = parent.parentElement;
-      }
-      return path;
     }
   }
 

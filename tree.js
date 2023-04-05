@@ -225,6 +225,18 @@
       }
       this.emit('browse', false);
     }
+    // This method takes an element as an argument and return the full path of it.
+    getPath(element){     
+      let path = element.textContent;
+      let parent = element.parentElement;
+      while (parent && parent !== this.parent) {
+        if (parent.querySelector("summary")) {
+          path = parent.querySelector("summary").textContent + "/" + path;
+        }
+        parent = parent.parentElement;
+      }
+      return path;
+    }
   }
 
   class SelectTree extends AsyncTree {

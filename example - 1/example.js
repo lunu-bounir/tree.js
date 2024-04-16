@@ -108,3 +108,28 @@ document.getElementById('delete').addEventListener('click', () => {
   tree.navigate('backward');
   tree.remove(node);
 });
+
+document.getElementById('add-folder-1').addEventListener('click', () => {
+  tree.json([{
+    name: 'new folder',
+    open: true,
+    type: Tree.FOLDER,
+    selected: true,
+    children: [{
+      name: 'file 1/1'
+    }]
+  }]);
+});
+document.getElementById('add-folder-2').addEventListener('click', () => {
+  tree.browse(a => {
+    console.log(a.node, a.node.name === 'folder-1');
+    if (a.node.name === 'folder 1') {
+      setTimeout(() => tree.json([{
+        name: 'new file',
+        selected: true
+      }], a));
+      return true;
+    }
+    return false;
+  });
+});

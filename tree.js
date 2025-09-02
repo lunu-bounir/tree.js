@@ -284,13 +284,15 @@
       this.id = window.setTimeout(() => document.hasFocus() && target.focus(), 100);
     }
     select(target) {
-      const summary = target.querySelector('summary');
-      if (summary) {
-        target = summary;
-      }
       [...this.parent.querySelectorAll('.selected')].forEach(e => e.classList.remove('selected'));
-      target.classList.add('selected');
-      this.focus(target);
+      if (target) {
+        const summary = target.querySelector('summary');
+        if (summary) {
+          target = summary;
+        }
+        target.classList.add('selected');
+        this.focus(target);
+      }
       this.emit('select', target);
     }
     active() {
@@ -298,15 +300,26 @@
     }
     navigate(direction = 'forward') {
       const e = this.active();
-      if (e) {
-        const list = [...this.parent.querySelectorAll('a, summary')];
-        const index = list.indexOf(e);
-        const candidates = direction === 'forward' ? list.slice(index + 1) : list.slice(0, index).reverse();
-        for (const m of candidates) {
-          if (m.getBoundingClientRect().height) {
-            return this.select(m);
-          }
+      const list = [...this.parent.querySelectorAll('a, summary')];
+      let index = list.indexOf(e);
+      if (index === 1 && direction !== 'forward') {
+        return;
+      }
+      if (index === -1 && direction === 'forward') {
+        index = 0;
+      }
+      if (index === -1 && direction !== 'forward') {
+        index = list.length;
+      }
+      const candidates = direction === 'forward' ? list.slice(index + 1) : list.slice(0, index).reverse();
+
+      for (const m of candidates) {
+        // do not select a hidden node
+        const ds = this.hierarchy(m).filter(e => e !== m && e.tagName === 'SUMMARY').map(e => e.parentElement);
+        if (ds.some(d => d.hasAttribute('open') === false)) {
+          continue;
         }
+        return this.select(m);
       }
     }
   }

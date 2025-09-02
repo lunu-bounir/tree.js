@@ -93,6 +93,9 @@ document.getElementById('previous').addEventListener('click', () => {
 document.getElementById('next').addEventListener('click', () => {
   tree.navigate('forward');
 });
+document.getElementById('none').addEventListener('click', () => {
+  tree.select(null);
+});
 
 document.getElementById('rename').addEventListener('click', () => {
   const node = tree.active();
